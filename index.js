@@ -1,7 +1,7 @@
 // Name: PeerJS
-// ID: peerjs
+// ID: mikedevpeerjs
 // Description: A port of the PeerJS library for Scratch.
-// By: MikeDEV
+// By: MikeDEV <https://scratch.mit.edu/users/MikeDEVTheDucklord/>
 // License: MIT
 
 /*
@@ -51,7 +51,9 @@
 
   // Require the browser to support WebRTC (used for connectivity)
   if (!RTCPeerConnection) {
-    alert("The PeerJS extension could not detect WebRTC support; this extension won't work properly.");
+    alert(
+      "The PeerJS extension could not detect WebRTC support; this extension won't work properly.",
+    );
   }
 
   // Require browser to support Web Locks API (used for concurrency)

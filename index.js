@@ -851,6 +851,7 @@
     }
 
     doesPeerHaveChannel({ ID, CHANNEL }) {
+      ID = Scratch.Cast.toString(ID);
       if (!this.peer) return false;
       const conn = this.dataConnections.get(ID);
       if (!conn) return false;

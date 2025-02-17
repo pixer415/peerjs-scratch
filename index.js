@@ -147,6 +147,7 @@
       this.verboseLogs = false;
       this.ringingPeers = new Map();
       this.ulidGenerator = new ULID();
+      this.serverConfig = {'host': '0.peerjs.com', 'path': '/', 'port': 9000, 'key': ''};
       this.myVoiceStream;
     }
 
@@ -229,8 +230,11 @@
           {
             opcode: "createPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("connect to PeerJS as [ID]"),
+            text: Scratch.translate("connect to PeerJS server [SERVER] on port [PORT] with key [KEY] as [ID]"),
             arguments: {
+              SERVER: {
+                  
+              }    
               ID: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: "A",

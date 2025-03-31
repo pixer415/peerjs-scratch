@@ -640,9 +640,9 @@
       // PeerJS connection event handlers
       handleDataConnection(conn) {
         conn.on("open", () => {
+          this.dataConnections.set(conn.peer, conn);
           this.handleChannelOpen(conn, conn);
           if (conn.label === "default") {
-            this.dataConnections.set(conn.peer, conn);
             this.newestConnected = conn.peer;
             Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerConnects");
             Scratch.vm.runtime.startHats(

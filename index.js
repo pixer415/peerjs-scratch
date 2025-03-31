@@ -642,6 +642,7 @@
         conn.on("open", () => {
           this.handleChannelOpen(conn, conn);
           if (conn.label === "default") {
+            this.dataConnections.set(conn.peer, conn);
             this.newestConnected = conn.peer;
             Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerConnects");
             Scratch.vm.runtime.startHats(
@@ -782,7 +783,6 @@
           label: "default",
           reliable: true,
         });
-        this.dataConnections.set(conn.peer, conn);
         conn.idCounter = 2;
         conn.channels = new Map();
         this.handleDataConnection(conn);

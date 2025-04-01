@@ -805,7 +805,7 @@
         const all = [];
         this.dataConnections.forEach((value, key, map) => {
             if (!value.disconnected) {
-                all.append(key);
+                all.push(key);
             }
         });
         return all;

@@ -808,7 +808,7 @@
                 all.push(key);
             }
         });
-        return all;
+        return all.toString();
       }
   
       isOtherPeerConnected({ ID }) {

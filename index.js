@@ -301,6 +301,11 @@
             },
             "---",
             {
+              opcode: "allPeersConnected",
+              blockType: Scratch.BlockType.REPORTER,
+              text: Scratch.translate("all peers connected"),
+            },
+            {
               opcode: "isOtherPeerConnected",
               blockType: Scratch.BlockType.BOOLEAN,
               text: Scratch.translate("connected to [ID]?"),
@@ -793,6 +798,17 @@
         if (!this.peer) return;
         if (!this.dataConnections.has(ID)) return;
         this.dataConnections.get(ID).close();
+      }
+
+      allPeersConnected() {
+        if (!this.peer) return "[]";
+        const all = [];
+        this.dataConnections.forEach((value, key, map) => {
+            if (!value.disconnected) {
+                all.append(key);
+            }
+        });
+        return all;
       }
   
       isOtherPeerConnected({ ID }) {

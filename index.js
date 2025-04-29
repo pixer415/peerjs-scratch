@@ -147,14 +147,12 @@
       this.verboseLogs = false;
       this.ringingPeers = new Map();
       this.ulidGenerator = new ULID();
-      this.defaultStunUrl = "stun:vpn.mikedev101.cc:5349";
-      this.defaultTurnUrl = "turn:vpn.mikedev101.cc:5349";
+      this.defaultStunUrl = "stun:vpn.mikedev101.cc:3478";
+      this.defaultTurnUrl = "turn:vpn.mikedev101.cc:3478";
       this.defaultTurnUser = "free";
       this.defaultTurnPass = "free";
-      this.stunUrl = this.defaultStunUrl;
-      this.turnUrl = this.defaultTurnUrl;
-      this.turnUser = this.defaultTurnUser;
-      this.turnPass = this.defaultTurnPass;
+      this.stunUrl = [];
+      this.turnUrl = [];
       this.myVoiceStream;
     }
 
@@ -203,7 +201,7 @@
           {
             opcode: "setSTUN",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("Use [URL] for STUN"),
+            text: Scratch.translate("Add STUN [URL]"),
             arguments: {
               URL: {
                 type: Scratch.ArgumentType.STRING,
@@ -214,7 +212,7 @@
           {
             opcode: "setTURN",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("Use [URL] for TURN with username [USER] password [PASS]"),
+            text: Scratch.translate("Add TURN [URL] with username [USER] password [PASS]"),
             arguments: {
               URL: {
                 type: Scratch.ArgumentType.STRING,
@@ -693,13 +691,17 @@
     }
 
     setSTUN({ URL }) {
-      this.stunUrl = Scratch.Cast.toString(URL);
+      const addition = { urls: Scratch.Cast.toString(URL) };
+      if (!this.stunUrl.includes(addition)) {
+        this.stunUrl.push(addition);
+      }
     }
 
     setTURN({ URL, USER, PASS }) {
-      this.turnUrl = Scratch.Cast.toString(URL);
-      this.turnUser = Scratch.Cast.toString(USER);
-      this.turnPass = Scratch.Cast.toString(PASS);
+      const addition = { urls: Scratch.Cast.toString(URL), username: Scratch.Cast.toString(USER), credential: Scratch.Cast.toString(PASS) };
+      if (!this.turnUrl.includes(addition)) {
+        this.turnUrl.push(addition);
+      }
     }
 
     createPeer({ ID, SERVER, KEY }) {
@@ -708,16 +710,7 @@
       const peerjsSettings = {
         config: {
           iceTransportPolicy: "all",
-          iceServers: [
-            {
-              urls: this.stunUrl,
-            },
-            {
-              urls: this.turnUrl,
-              username: this.turnUser,
-              credential: this.turnPass,
-            }
-          ],
+          iceServers: this.stunUrl.concat(this.turnUrl),
         },
         // Only enable verbose logs if the user wants it - This can get very laggy if left enabled by accident
         debug: this.verboseLogs ? 3 : 2,
@@ -732,7 +725,7 @@
       peerjsSettings.secure = (SERVER.protocol === 'https:' || SERVER.protocol === 'wss:') ? true : false;
       if (!!KEY) peerjsSettings.key = KEY;
 
-      if (this.verboseLogs) console.log("Peer server settings: " + peerjsSettings);
+      if (this.verboseLogs) console.log("Peer server settings: " + JSON.stringify(peerjsSettings));
 
       this.peer = new Peer(ID, peerjsSettings);
 

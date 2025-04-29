@@ -228,6 +228,11 @@
               },
             },
           },
+          {
+            opcode: "clearSTUNTURN",
+            blocktype: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("Clear STUN/TURN"),
+          },
           "---",
           {
             opcode: "whenPeerCreated",
@@ -270,7 +275,7 @@
             arguments: {
               SERVER: {
                 type: Scratch.ArgumentType.STRING,
-                defaultValue: "http://0.peerjs.com:443",
+                defaultValue: "ws://0.peerjs.com:443",
               },
               KEY: {
                 type: Scratch.ArgumentType.STRING,
@@ -702,6 +707,11 @@
       if (!this.turnUrl.includes(addition)) {
         this.turnUrl.push(addition);
       }
+    }
+
+    clearSTUNTURN() {
+      this.stunUrl = [];
+      this.turnUrl = [];
     }
 
     createPeer({ ID, SERVER, KEY }) {

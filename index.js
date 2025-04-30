@@ -271,7 +271,7 @@
           {
             opcode: "createPeer",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("connect to PeerJS server [SERVER] with key [KEY] as [ID]"),
+            text: Scratch.translate("connect to PeerJS server [SERVER] with key [KEY] as [ID] and only use relay? [RELAY]"),
             arguments: {
               SERVER: {
                 type: Scratch.ArgumentType.STRING,
@@ -284,6 +284,10 @@
               ID: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: "A",
+              },
+              RELAY: {
+                type: Scratch.ArgumentType.BOOLEAN,
+                defaultValue: false,
               },
             },
           },
@@ -714,12 +718,12 @@
       this.turnUrl = [];
     }
 
-    createPeer({ ID, SERVER, KEY }) {
+    createPeer({ ID, SERVER, KEY, RELAY }) {
       ID = Scratch.Cast.toString(ID);
       // peerjsSettings object created
       const peerjsSettings = {
         config: {
-          iceTransportPolicy: "all",
+          iceTransportPolicy: RELAY ? "relay" : "all",
           iceServers: this.stunUrl.concat(this.turnUrl),
         },
         // Only enable verbose logs if the user wants it - This can get very laggy if left enabled by accident

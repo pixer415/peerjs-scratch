@@ -1468,7 +1468,6 @@
     isPeerMicFeedAvailable({ ID }) { return this.voiceConnections.has(Scratch.Cast.toString(ID)); }
     getPeerMicFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
-      VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.voiceConnections.get(ID);
       if (conn.audio) {
         return conn.audio.volume * 100;
@@ -1558,7 +1557,6 @@
     isPeerCamFeedAvailable({ ID }) { return this.videoConnections.has(Scratch.Cast.toString(ID)); }
     getPeerCamFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
-      VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.videoConnections.get(ID);
       if (conn.video) {
         return conn.video.volume * 100;
@@ -1680,7 +1678,6 @@
     isPeerScreenFeedAvailable({ ID }) { return this.screenConnections.has(Scratch.Cast.toString(ID)); }
     getPeerScreenFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
-      VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.screenConnections.get(ID);
       if (conn.video) {
         return conn.video.volume * 100;

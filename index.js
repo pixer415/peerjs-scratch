@@ -485,7 +485,7 @@
           },
           {
             opcode: "getPeerMicFeedVolume",
-            blockType: Scratch.BlockType.COMMAND,
+            blockType: Scratch.BlockType.REPORTER,
             text: Scratch.translate("get peer [ID] microphone volume"),
             arguments: {
               ID: {
@@ -693,7 +693,7 @@
           },
           {
             opcode: "getPeerCamFeedVolume",
-            blockType: Scratch.BlockType.COMMAND,
+            blockType: Scratch.BlockType.REPORTER,
             text: Scratch.translate("get peer [ID] camera volume"),
             arguments: {
               ID: {
@@ -901,7 +901,7 @@
           },
           {
             opcode: "getPeerScreenFeedVolume",
-            blockType: Scratch.BlockType.COMMAND,
+            blockType: Scratch.BlockType.REPORTER,
             text: Scratch.translate("get peer [ID] screen share volume"),
             arguments: {
               ID: {
@@ -1469,7 +1469,7 @@
     getPeerMicFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
       const conn = this.voiceConnections.get(ID);
-      if (conn.audio) {
+      if (!!conn) {
         return conn.audio.volume * 100;
       }
       return -1;
@@ -1478,7 +1478,7 @@
       ID = Scratch.Cast.toString(ID);
       VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.voiceConnections.get(ID);
-      if (conn.audio) {
+      if (!!conn) {
         VOL = Math.min(Math.max(VOL, 0), 100) / 100;
         conn.audio.volume = VOL;
         if (VOL > 0) {
@@ -1558,7 +1558,7 @@
     getPeerCamFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
       const conn = this.videoConnections.get(ID);
-      if (conn.video) {
+      if (!!conn) {
         return conn.video.volume * 100;
       }
       return -1;
@@ -1567,7 +1567,7 @@
       ID = Scratch.Cast.toString(ID);
       VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.videoConnections.get(ID);
-      if (conn.video) {
+      if (!!conn) {
         VOL = Math.min(Math.max(VOL, 0), 100) / 100;
         conn.video.volume = VOL;
         if (VOL > 0) {
@@ -1679,7 +1679,7 @@
     getPeerScreenFeedVolume({ ID }) {
       ID = Scratch.Cast.toString(ID);
       const conn = this.screenConnections.get(ID);
-      if (conn.video) {
+      if (!!conn) {
         return conn.video.volume * 100;
       }
       return -1;
@@ -1688,7 +1688,7 @@
       ID = Scratch.Cast.toString(ID);
       VOL = Scratch.Cast.toNumber(VOL);
       const conn = this.screenConnections.get(ID);
-      if (conn.video) {
+      if (!!conn) {
         VOL = Math.min(Math.max(VOL, 0), 100) / 100;
         conn.video.volume = VOL;
         if (VOL > 0) {

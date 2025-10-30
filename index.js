@@ -1521,7 +1521,7 @@
         conn = this.screenConnections.get(ID);
       }
       if (conn && conn.call && conn.call.peerConnection) {
-        const stats = await this.peerConnection.getStats();
+        const stats = await conn.call.peerConnection.getStats();
         const statsObject = {};
 
         let outboundVideoReport = null;
@@ -2048,5 +2048,6 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 

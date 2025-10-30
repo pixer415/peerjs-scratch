@@ -393,6 +393,12 @@
           },
           "---",
           {
+            opcode: "ringingPeersList",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("get list of ringing peers"),
+          },
+          "---",
+          {
             blockType: Scratch.BlockType.LABEL,
             text: "Voice Calls"
           },
@@ -717,6 +723,17 @@
               },
             }
           },
+          {
+            opcode: "getCamPCStats",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("get peer [ID] camera stats"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "B",
+              },
+            }
+          },
           "---",
           {
             blockType: Scratch.BlockType.LABEL,
@@ -925,6 +942,17 @@
               },
             }
           },
+          {
+            opcode: "getScreenPCStats",
+            blockType: Scratch.BlockType.REPORTER,
+            text: Scratch.translate("get peer [ID] screen stats"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "B",
+              },
+            }
+          },
           "---",
           {
             blockType: Scratch.BlockType.LABEL,
@@ -1020,6 +1048,21 @@
               ORDERED: {
                 type: Scratch.ArgumentType.BOOLEAN,
                 defaultValue: false,
+              },
+            },
+          },
+          {
+            opcode: "closePeerChannel",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("close channel [CHANNEL] with peer [ID]"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "B",
+              },
+              CHANNEL: {
+                type: Scratch.ArgumentType.STRING,
+                defaultValue: "blueberry",
               },
             },
           },
@@ -1423,6 +1466,10 @@
       return this.lastDisconnected;
     }
 
+    ringingPeersList() {
+      return JSON.stringify(Array.from(this.ringingPeers.keys()));
+    }
+
     // --- Voice Call Blocks ---
     doIHaveMicPerms() { return this.hasMicPerms; }
 
@@ -1463,6 +1510,119 @@
       ID = Scratch.Cast.toString(ID);
       if (this.voiceConnections.has(ID)) this.voiceConnections.get(ID).call.close();
       if (this.ringingPeers.has(ID)) this.ringingPeers.get(ID).close();
+    }
+
+    async getPCStats({ ID, TYPE }) {
+      ID = Scratch.Cast.toString(ID);
+      let conn = null;
+      if ( TYPE === 'camera') {
+        conn = this.videoConnections.get(ID);
+      } else if ( TYPE === 'screen') {
+        conn = this.screenConnections.get(ID);
+      }
+      if (conn && conn.call && conn.call.peerConnection) {
+        const stats = await this.peerConnection.getStats();
+        const statsObject = {};
+
+        let outboundVideoReport = null;
+        let inboundVideoReport = null;
+
+        // 1. Find both the main outbound and inbound video reports
+        for (const report of stats.values()) {
+          if (report.type === 'outbound-rtp' && report.kind === 'video') {
+            outboundVideoReport = report;
+          }
+          if (report.type === 'inbound-rtp' && report.kind === 'video') {
+            inboundVideoReport = report;
+          }
+          // If we've found both, we can stop
+          if (outboundVideoReport && inboundVideoReport) {
+            break;
+          }
+        }
+
+        // --- 2. Process Outbound (Sending) Stats ---
+        if (outboundVideoReport) {
+          // Get the codec name
+          if (outboundVideoReport.codecId) {
+            const codecReport = stats.get(outboundVideoReport.codecId);
+            if (codecReport && codecReport.mimeType) {
+              statsObject.activeSendingCodec = codecReport.mimeType;
+            }
+          }
+
+          statsObject.sendingResolution = `${outboundVideoReport.frameWidth}x${outboundVideoReport.frameHeight}`;
+
+          // Get stats from the receiver's perspective
+          if (outboundVideoReport.remoteId) {
+            const remoteReport = stats.get(outboundVideoReport.remoteId);
+            if (remoteReport) {
+              statsObject.receiverReported_PacketsLost = remoteReport.packetsLost;
+              statsObject.jitter_ms = Math.round(remoteReport.jitter * 1000);
+              statsObject.roundTripTime_ms = Math.round(remoteReport.roundTripTime * 1000);
+            }
+          }
+
+          // Calculate deltas (bitrate, fps)
+          if (this.previousStats && this.previousStats.outbound) {
+            const timeDeltaSeconds = (outboundVideoReport.timestamp - this.previousStats.outbound.timestamp) / 1000;
+
+            const bytesDelta = outboundVideoReport.bytesSent - this.previousStats.outbound.bytesSent;
+            statsObject.sendingBitrate_kbps = Math.round((bytesDelta * 8) / timeDeltaSeconds / 1000);
+
+            const framesDelta = outboundVideoReport.framesSent - this.previousStats.outbound.framesSent;
+            statsObject.sending_fps = Math.round(framesDelta / timeDeltaSeconds);
+          } else {
+            statsObject.sendingBitrate_kbps = 0;
+            statsObject.sending_fps = 0;
+          }
+        }
+
+        // --- 3. Process Inbound (Receiving) Stats ---
+        if (inboundVideoReport) {
+          // Get the codec name
+          if (inboundVideoReport.codecId) {
+            const codecReport = stats.get(inboundVideoReport.codecId);
+            if (codecReport && codecReport.mimeType) {
+              // This is the key you requested
+              statsObject.activeIncomingCodec = codecReport.mimeType;
+            }
+          }
+
+          statsObject.receivingResolution = `${inboundVideoReport.frameWidth}x${inboundVideoReport.frameHeight}`;
+          statsObject.receivingPacketsLost = inboundVideoReport.packetsLost;
+          statsObject.receivingJitter_ms = Math.round(inboundVideoReport.jitter * 1000);
+
+          // Calculate deltas (bitrate, fps)
+          if (this.previousStats && this.previousStats.inbound) {
+            const timeDeltaSeconds = (inboundVideoReport.timestamp - this.previousStats.inbound.timestamp) / 1000;
+
+            const bytesDelta = inboundVideoReport.bytesReceived - this.previousStats.inbound.bytesReceived;
+            statsObject.receivingBitrate_kbps = Math.round((bytesDelta * 8) / timeDeltaSeconds / 1000);
+
+            // Use framesDecoded for a more accurate representation of what's being seen
+            const framesDelta = inboundVideoReport.framesDecoded - this.previousStats.inbound.framesDecoded;
+            statsObject.receiving_fps = Math.round(framesDelta / timeDeltaSeconds);
+          } else {
+            statsObject.receivingBitrate_kbps = 0;
+            statsObject.receiving_fps = 0;
+          }
+        }
+
+        // 4. Save current stats for next time
+        this.previousStats = {
+          outbound: outboundVideoReport,
+          inbound: inboundVideoReport
+        };
+
+        if (!outboundVideoReport && !inboundVideoReport) {
+          return { status: "No active video streams found." };
+        }
+
+        return statsObject;
+      } else {
+        return "{}";
+      }
     }
 
     isPeerMicFeedAvailable({ ID }) { return this.voiceConnections.has(Scratch.Cast.toString(ID)); }
@@ -1741,6 +1901,12 @@
         conn.video.style.zIndex = Scratch.Cast.toNumber(LAYER);
       }
     }
+    getScreenPCStats({ ID }) {
+      return this.getPCStats({ ID, TYPE: 'screen' });
+    }
+    getCamPCStats({ ID }) {
+      return this.getPCStats({ ID, TYPE: 'camera' });
+    }
 
     // --- Data Channel Blocks ---
     async openNewPeerChannel({ ID, CHANNEL, ORDERED }) {
@@ -1769,6 +1935,14 @@
           );
         }
       });
+    }
+
+    closePeerChannel({ ID, CHANNEL }) {
+      ID = Scratch.Cast.toString(ID);
+      CHANNEL = Scratch.Cast.toString(CHANNEL);
+      if (!this.isPeerConnected()) return;
+      if (!this.dataConnections.has(ID)) return;
+      this.dataConnections.get(ID).channels.get(CHANNEL).chan.close();
     }
 
     async sendMessageToPeer({ MESSAGE, ID, CHANNEL }) {

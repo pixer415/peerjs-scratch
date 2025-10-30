@@ -1619,7 +1619,7 @@
           return { status: "No active video streams found." };
         }
 
-        return statsObject;
+        return JSON.stringify(statsObject);
       } else {
         return "{}";
       }
@@ -2048,6 +2048,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 

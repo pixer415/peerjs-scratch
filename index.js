@@ -1347,7 +1347,7 @@
     connectToPeer({ ID }) {
       ID = Scratch.Cast.toString(ID);
       if (!this.isPeerConnected() || this.dataConnections.has(ID)) return;
-      const conn = this.peer.connect(ID, { label: "default", reliable: false });
+      const conn = this.peer.connect(ID, { label: "default", reliable: true });
       conn.idCounter = 2;
       conn.channels = new Map();
       this.ensureDefaultChannel(conn);
@@ -1907,4 +1907,5 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 

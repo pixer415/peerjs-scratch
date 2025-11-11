@@ -126,6 +126,7 @@
       this.videoConnections = new Map();
       this.screenConnections = new Map();
       this.ringingPeers = new Map();
+      this.isDefaultReliable = true;
 
       // Status and info
       this.newestConnected = "";
@@ -353,6 +354,17 @@
               ID: {
                 type: Scratch.ArgumentType.STRING,
                 defaultValue: "B",
+              },
+            },
+          },
+          {
+            opcode: "setDefaultReliable",
+            blockType: Scratch.BlockType.COMMAND,
+            text: Scratch.translate("default channel reliable? [ID]"),
+            arguments: {
+              ID: {
+                type: Scratch.ArgumentType.BOOLEAN,
+                defaultValue: true,
               },
             },
           },
@@ -1347,11 +1359,15 @@
     connectToPeer({ ID }) {
       ID = Scratch.Cast.toString(ID);
       if (!this.isPeerConnected() || this.dataConnections.has(ID)) return;
-      const conn = this.peer.connect(ID, { label: "default", reliable: true });
+      const conn = this.peer.connect(ID, { label: "default", reliable: this.isDefaultReliable });
       conn.idCounter = 2;
       conn.channels = new Map();
       this.ensureDefaultChannel(conn);
       this.handleDataConnection(conn);
+    }
+
+    setDefaultReliable({ YESNO }) {
+        this.isDefaultReliable = Scratch.Cast.toBoolean(YESNO);
     }
 
     disconnectFromPeer({ ID }) {
@@ -1907,5 +1923,6 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 

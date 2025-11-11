@@ -360,9 +360,9 @@
           {
             opcode: "setDefaultReliable",
             blockType: Scratch.BlockType.COMMAND,
-            text: Scratch.translate("default channel reliable? [ID]"),
+            text: Scratch.translate("default channel reliable? [YESNO]"),
             arguments: {
-              ID: {
+              YESNO: {
                 type: Scratch.ArgumentType.BOOLEAN,
                 defaultValue: true,
               },
@@ -1923,6 +1923,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 

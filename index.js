@@ -1147,7 +1147,7 @@
         "Channel " + chan.label + " error with peer " + conn.peer + ":",
         err
       );
-      this.peer.errorInfo = err;
+      this.peer.errorInfo = (err.error && err.error.message) || err.message || err.type || String(err);
       Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerHasError");
     }
 
@@ -1347,7 +1347,7 @@
       this.peer.on("disconnected", () => Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerDisconnected"));
       this.peer.on("error", (err) => {
         console.log("Peer error:", err);
-        this.peer.errorInfo = err.type || String(err);
+        this.peer.errorInfo = (err.error && err.error.message) || err.message || err.type || String(err);
         Scratch.vm.runtime.startHats("mikedevpeerjs_whenPeerHasError");
       });
     }
@@ -1923,6 +1923,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 

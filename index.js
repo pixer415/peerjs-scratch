@@ -1259,6 +1259,12 @@
       });
     }
 
+    conn.peerConnection.onconnectionstatechange = () => {
+      if (["closed", "failed", "disconnected"].includes(conn.peerConnection.connectionState)) {
+        conn.close();
+      }
+    }
+
     // --- Block Implementations ---
 
     newULID() {
@@ -1914,6 +1920,12 @@
         }
       });
 
+      conn.peerConnection.onconnectionstatechange = () => {
+        if (["closed", "failed", "disconnected"].includes(conn.peerConnection.connectionState)) {
+          conn.close();
+        }
+      }
+
       call.on("error", (err) => {
         console.warn(`Call with peer ${id} (type: ${type}) error:`, err);
       });
@@ -1923,6 +1935,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 

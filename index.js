@@ -1253,16 +1253,15 @@
       });
 
       conn.on("error", (err) => this.handleChannelError(conn, conn, err));
+      conn.peerConnection.onconnectionstatechange = () => {
+        if (["closed", "failed", "disconnected"].includes(conn.peerConnection.connectionState)) {
+          conn.close();
+        }
+      }
       conn.on("data", async (data) => {
         this.ensureDefaultChannel(conn);
         await this.handleChannelData(conn, conn.channels.get("default").chan, JSON.parse(data));
       });
-    }
-
-    conn.peerConnection.onconnectionstatechange = () => {
-      if (["closed", "failed", "disconnected"].includes(conn.peerConnection.connectionState)) {
-        conn.close();
-      }
     }
 
     // --- Block Implementations ---
@@ -1920,9 +1919,9 @@
         }
       });
 
-      conn.peerConnection.onconnectionstatechange = () => {
-        if (["closed", "failed", "disconnected"].includes(conn.peerConnection.connectionState)) {
-          conn.close();
+      call.peerConnection.onconnectionstatechange = () => {
+        if (["closed", "failed", "disconnected"].includes(call.peerConnection.connectionState)) {
+          call.close();
         }
       }
 
@@ -1935,6 +1934,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 

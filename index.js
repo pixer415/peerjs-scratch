@@ -1258,6 +1258,9 @@
           conn.close();
         }
       }
+      window.addEventListener('beforeunload', (event) => {
+        conn.close();
+      }, { once: true });
       conn.on("data", async (data) => {
         this.ensureDefaultChannel(conn);
         await this.handleChannelData(conn, conn.channels.get("default").chan, JSON.parse(data));
@@ -1925,6 +1928,10 @@
         }
       }
 
+      window.addEventListener('beforeunload', (event) => {
+        call.close();
+      }, { once: true });
+
       call.on("error", (err) => {
         console.warn(`Call with peer ${id} (type: ${type}) error:`, err);
       });
@@ -1934,6 +1941,7 @@
 
   Scratch.extensions.register(new PeerJS_Scratch());
 })(Scratch);
+
 
 
 
